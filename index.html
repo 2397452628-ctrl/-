@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2027考研数学二 · 每日打卡表（3.15-6.30）</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 { font-size: 26px; margin-bottom: 8px; font-weight: 700; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+            background: rgba(255,255,255,0.15);
+            padding: 10px 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .stat-number { font-size: 28px; font-weight: 700; display: block; }
+        .stat-label { font-size: 12px; opacity: 0.9; }
+        .progress-container {
+            margin-top: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        .toolbar {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #48bb78; color: white; }
+        .btn-success:hover { background: #38a169; }
+        .btn-warning { background: #ed8936; color: white; }
+        .btn-warning:hover { background: #dd6b20; }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; }
+        .btn-secondary:hover { background: #cbd5e0; }
+        
+        .filters {
+            padding: 10px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .filter-tag.active { font-weight: 700; }
+        .filter-all { background: #edf2f7; color: #4a5568; }
+        .filter-all.active { background: #4a5568; color: white; }
+        .filter-calc { background: #ebf8ff; color: #2b6cb0; }
+        .filter-calc.active { background: #2b6cb0; color: white; }
+        .filter-linear { background: #f0fff4; color: #276749; }
+        .filter-linear.active { background: #276749; color: white; }
+        .filter-trans { background: #fffff0; color: #975a16; }
+        .filter-trans.active { background: #975a16; color: white; }
+        .filter-lin-adv { background: #faf5ff; color: #6b46c1; }
+        .filter-lin-adv.active { background: #6b46c1; color: white; }
+        .filter-review { background: #f7fafc; color: #4a5568; }
+        .filter-review.active { background: #4a5568; color: white; }
+        
+        .table-wrapper { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        thead th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        tbody tr {
+            transition: all 0.2s;
+            border-bottom: 1px solid #edf2f7;
+        }
+        tbody tr:hover { background: #f7fafc; }
+        tbody td {
+            padding: 8px;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+        .check-cell {
+            width: 40px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .checkbox-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #cbd5e0;
+            background: white;
+        }
+        .checkbox-wrapper:hover { border-color: #667eea; transform: scale(1.1); }
+        .checkbox-wrapper.checked {
+            background: #48bb78;
+            border-color: #48bb78;
+        }
+        .checkbox-wrapper.checked::after {
+            content: "✓";
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        tr.completed { opacity: 0.55; background: #f0fff4 !important; }
+        tr.completed td { text-decoration: line-through; color: #a0aec0; }
+        tr.completed .check-cell { text-decoration: none !important; }
+        tr.completed .checkbox-wrapper { text-decoration: none !important; }
+        tr.completed .phase-badge { text-decoration: none !important; }
+        
+        .date-col { white-space: nowrap; width: 90px; }
+        .week-col { white-space: nowrap; width: 45px; text-align: center; font-weight: 700; }
+        .phase-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .phase-calc { background: #ebf8ff; color: #2b6cb0; }
+        .phase-linear { background: #f0fff4; color: #276749; }
+        .phase-trans { background: #fffff0; color: #975a16; }
+        .phase-lin-adv { background: #faf5ff; color: #6b46c1; }
+        .phase-review { background: #edf2f7; color: #4a5568; }
+        .task-cell { max-width: 280px; }
+        .action-cell { max-width: 180px; color: #718096; font-size: 11px; }
+        .weekend-row { background: #fffaf0 !important; }
+        .weekend-row .weekday { color: #dd6b20; font-weight: 700; }
+        
+        .legend {
+            padding: 12px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: #4a5568;
+            justify-content: center;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 18px; }
+            .stats-bar { gap: 10px; }
+            .stat-item { padding: 6px 12px; }
+            .stat-number { font-size: 22px; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .btn { width: 100%; justify-content: center; }
+            .filters { justify-content: center; }
+            table { font-size: 11px; }
+            tbody td { padding: 6px; }
+            .task-cell, .action-cell { max-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗓️ 2027考研数学二 · 每日打卡表</h1>
+            <p>3月15日 — 6月30日（108天）| 高数线代统一跟周洋鑫 | 点击圆圈打卡</p>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-number" id="completedCount">0</span>
+                    <span class="stat-label">已完成天数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="remainingCount">108</span>
+                    <span class="stat-label">剩余天数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="progressPercent">0%</span>
+                    <span class="stat-label">总进度</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="streakCount">0</span>
+                    <span class="stat-label">连续打卡</span>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <div class="toolbar">
+            <div>
+                <button class="btn btn-primary" onclick="exportExcel()">📥 下载 Excel</button>
+                <button class="btn btn-success" onclick="exportWord()">📄 下载 Word</button>
+            </div>
+            <div>
+                <button class="btn btn-secondary" onclick="resetAll()">🔄 重置</button>
+                <button class="btn btn-warning" onclick="markAllDone()">✅ 一键全打</button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <span style="font-size:12px;color:#718096;margin-right:5px;">筛选阶段：</span>
+            <span class="filter-tag filter-all active" onclick="filterPhase('all')">全部</span>
+            <span class="filter-tag filter-calc" onclick="filterPhase('高数基础')">🟦 高数基础</span>
+            <span class="filter-tag filter-linear" onclick="filterPhase('线代基础')">🟩 线代基础</span>
+            <span class="filter-tag filter-trans" onclick="filterPhase('线代过渡')">🟨 线代过渡</span>
+            <span class="filter-tag filter-lin-adv" onclick="filterPhase('线代强化')">🟪 线代强化</span>
+            <span class="filter-tag filter-review" onclick="filterPhase('总复盘')">⬜ 总复盘</span>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="planTable">
+                <thead>
+                    <tr>
+                        <th style="width:40px">打卡</th>
+                        <th style="width:85px">日期</th>
+                        <th style="width:40px">周</th>
+                        <th style="width:70px">阶段</th>
+                        <th style="min-width:200px">课程/任务内容</th>
+                        <th style="max-width:260px">具体产出与任务</th>
+                        <th style="max-width:160px">关键动作与备注</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#4299e1"></div>高数基础</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#48bb78"></div>线代基础</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ecc94b"></div>线代过渡</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#9f7aea"></div>线代强化</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a0aec0"></div>总复盘</div>
+            <div class="legend-item" style="margin-left:10px;font-weight:600;">🟧 橙色日期 = 周日复盘日</div>
+        </div>
+    </div>
+
+    <script>
+        const dailyData = [
+            // ========== W1 高数基础 (3.15-3.21) ==========
+            { date: "3.15", weekday: "周六", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "第1课 函数极限定义与性质", task: "听课+讲义例题独立重做；整理极限定义ε-δ笔记", action: "睡前系列启动；建立错题本" },
+            { date: "3.16", weekday: "周日", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "重刷第1课错题+公式整理；极限等价无穷小默写第1轮", action: "制定W2计划；休息半天" },
+            { date: "3.17", weekday: "周一", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "第2课 无穷小及比较", task: "听课+例题重做；整理等价无穷小替换公式卡（8组）", action: "当天例题必须独立写出" },
+            { date: "3.18", weekday: "周二", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "第3课 泰勒公式展开", task: "听课+例题重做；默写8个常用泰勒公式至8阶", action: "泰勒是全年灵魂，务必滚瓜烂熟" },
+            { date: "3.19", weekday: "周三", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "第4课 洛必达法则", task: "听课+例题重做；整理洛必达适用条件与反例", action: "注意洛必达失效情形" },
+            { date: "3.20", weekday: "周四", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "第5课 四则运算与抓大头", task: "听课+例题重做；极限四则运算法则深度理解", action: "抓大头公式整理" },
+            { date: "3.21", weekday: "周五", week: "W1", phase: "高数基础", phaseClass: "phase-calc", content: "第6课 七种未定式(1)", task: "听课+例题重做；0/0、∞/∞型专项训练", action: "《考点全刷》第1-6课对应章" },
+            
+            // ========== W2 (3.22-3.28) ==========
+            { date: "3.22", weekday: "周六", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "第7课 七种未定式(2)", task: "听课+例题重做；∞-∞、0·∞、1^∞型专项", action: "1^∞型三种解法对比整理" },
+            { date: "3.23", weekday: "周日", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "极限计算专项测20题（限时40min）；建立“极限计算流程图”", action: "错题归入错题本；标记薄弱类型" },
+            { date: "3.24", weekday: "周一", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "第8课 数列极限(1)", task: "听课+例题重做；理解数列极限定义与性质", action: "数列极限基础概念为主" },
+            { date: "3.25", weekday: "周二", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "第9课 数列极限(2)", task: "听课+例题重做；单调有界准则、夹逼准则应用", action: "证明题不强攻，记结论即可" },
+            { date: "3.26", weekday: "周三", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "第10课 连续与间断", task: "听课+例题重做；间断点分类判定流程图", action: "连续定义与极限关系梳理" },
+            { date: "3.27", weekday: "周四", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "第11课 导数定义", task: "听课+例题重做；导数定义三种考法归类", action: "重点：抽象函数可导性判定" },
+            { date: "3.28", weekday: "周五", week: "W2", phase: "高数基础", phaseClass: "phase-calc", content: "第12课 微分与几何意义", task: "听课+例题重做；微分定义、导数几何意义（切线法线）", action: "《考点全刷》第7-12课对应章" },
+
+            // ========== W3 (3.29-4.04) ==========
+            { date: "3.29", weekday: "周六", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "第13课 单调性与极值", task: "听课+例题重做；一阶导数符号与单调性关系", action: "画“导数应用”思维导图分支1" },
+            { date: "3.30", weekday: "周日", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "导数定义与几何意义错题重刷；公式默写（求导公式表）", action: "整理“导数应用”思维导图" },
+            { date: "3.31", weekday: "周一", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "第14课 最值与凹凸性", task: "听课+例题重做；闭区间最值求解步骤；二阶导与凹凸性", action: "极值点vs最值点对比整理" },
+            { date: "4.01", weekday: "周二", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "第15课 拐点与渐近线", task: "听课+例题重做；拐点判定、三种渐近线求法", action: "渐近线专项练5题" },
+            { date: "4.02", weekday: "周三", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "第16课 不定积分(1)凑微分", task: "听课+例题重做；凑微分法核心思想（复合函数反向）", action: "积分表每天默写10个启动" },
+            { date: "4.03", weekday: "周四", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "第17课 不定积分(2)换元法", task: "听课+例题重做；三角换元、根式换元、倒代换", action: "整理换元法触发条件" },
+            { date: "4.04", weekday: "周五", week: "W3", phase: "高数基础", phaseClass: "phase-calc", content: "第18课 不定积分(3)分部积分", task: "听课+例题重做；分部积分“反对幂指三”顺序", action: "清明假期可用半天补错题" },
+
+            // ========== W4 (4.05-4.11) ==========
+            { date: "4.05", weekday: "周六", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "第19课 不定积分(4)有理函数", task: "听课+例题重做；有理函数拆分、三角有理式", action: "《考点全刷》第16-19课对应章" },
+            { date: "4.06", weekday: "周日", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "积分表默写第2轮；不定积分专项测20题（限时60min）", action: "建立“被积函数→方法”对应表" },
+            { date: "4.07", weekday: "周一", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "第20课 定积分定义与性质", task: "听课+例题重做；定积分定义求极限、比较定理", action: "定积分几何意义画图理解" },
+            { date: "4.08", weekday: "周二", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "第21课 定积分计算", task: "听课+例题重做；牛顿-莱布尼茨、换元法（换限）、奇偶性", action: "定积分计算与不定积分差异对比" },
+            { date: "4.09", weekday: "周三", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "第22课 变限函数", task: "听课+例题重做；变限积分求导、含变限积分的极限", action: "整理“变限函数三大考法”" },
+            { date: "4.10", weekday: "周四", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "第23课 反常积分", task: "听课+例题重做；无穷区间、无界函数反常积分判敛", action: "反常积分敛散性判定总结" },
+            { date: "4.11", weekday: "周五", week: "W4", phase: "高数基础", phaseClass: "phase-calc", content: "第24课 定积分应用(1)面积", task: "听课+例题重做；直角坐标、参数方程、极坐标面积", action: "《考点全刷》第20-24课对应章" },
+
+            // ========== W5 (4.12-4.18) ==========
+            { date: "4.12", weekday: "周六", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "第25课 定积分应用(2)旋转体体积", task: "听课+例题重做；绕x轴、绕y轴、绕平行轴体积", action: "整理“旋转体体积两大公式”" },
+            { date: "4.13", weekday: "周日", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "定积分应用限时训练（3道大题，限时60min）；物理应用公式整理", action: "应用题是数二大题重灾区" },
+            { date: "4.14", weekday: "周一", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "第26课 定积分应用(3)弧长与物理", task: "听课+例题重做；弧长公式、功/水压力/质心（数二重点）", action: "物理应用记公式模板" },
+            { date: "4.15", weekday: "周二", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "第27课 微分方程(1)一阶方程", task: "听课+例题重做；可分离变量、齐次、一阶线性、伯努利", action: "通解公式默写第1轮" },
+            { date: "4.16", weekday: "周三", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "第28课 微分方程(2)高阶线性", task: "听课+例题重做；二阶常系数齐次/非齐次特解设定", action: "特解设定规则整理（λ与k比较）" },
+            { date: "4.17", weekday: "周四", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "第29课 微分方程(3)可降阶与综合", task: "听课+例题重做；缺y型、缺x型、微分方程反问题", action: "建立“方程类型→解法”对应表" },
+            { date: "4.18", weekday: "周五", week: "W5", phase: "高数基础", phaseClass: "phase-calc", content: "第30课 多元微分(1)概念与计算", task: "听课+例题重做；偏导数、全微分定义；链式求导", action: "《考点全刷》第25-30课对应章" },
+
+            // ========== W6 (4.19-4.25) ==========
+            { date: "4.19", weekday: "周六", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "第31课 多元微分(2)极值与条件极值", task: "听课+例题重做；无条件极值（AC-B²）、拉格朗日乘数法", action: "极值判定流程图" },
+            { date: "4.20", weekday: "周日", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "微分方程公式默写第2轮；《考点全刷》微分方程错题重刷", action: "多元微分与微分方程交叉错题" },
+            { date: "4.21", weekday: "周一", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "第32课 二重积分(1)概念与计算", task: "听课+例题重做；直角坐标计算（X型/Y型）、交换积分次序", action: "画图定限专项练5题" },
+            { date: "4.22", weekday: "周二", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "第33课 二重积分(2)技巧与对称性", task: "听课+例题重做；极坐标、轮换对称性、形心公式", action: "整理对称性结论（奇偶、轮换）" },
+            { date: "4.23", weekday: "周三", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "第34课 中值定理基础", task: "听课+例题重做；最值定理、介值定理、零点定理应用", action: "中值定理基础概念为主，证明不强攻" },
+            { date: "4.24", weekday: "周四", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "第35课 中值定理与不等式证明", task: "听课+例题重做；拉格朗日、柯西中值定理；不等式证明入门", action: "证明题记结论和套路" },
+            { date: "4.25", weekday: "周五", week: "W6", phase: "高数基础", phaseClass: "phase-calc", content: "第36课 高数基础总结(1)", task: "听课+例题重做；极限与导数专题串讲", action: "《考点全刷》基础篇收尾开始" },
+
+            // ========== W7 (4.26-5.02) ==========
+            { date: "4.26", weekday: "周六", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "第37课 高数基础总结(2)", task: "听课+例题重做；积分与微分方程专题串讲", action: "高数基础课全部结束" },
+            { date: "4.27", weekday: "周日", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "高数总回顾：极限→导数→积分→应用→微分方程→多元→二重积分框架梳理", action: "画“高数知识全景图”" },
+            { date: "4.28", weekday: "周一", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础补漏(1)：极限与导数专题", task: "重刷《考点全刷》极限+导数错题；讲义例题遮住答案重做", action: "针对薄弱章节专项突破" },
+            { date: "4.29", weekday: "周二", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础补漏(2)：积分计算专题", task: "重刷不定积分+定积分计算错题；积分表默写第3轮", action: "计算速度训练" },
+            { date: "4.30", weekday: "周三", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础补漏(3)：定积分应用专题", task: "重刷面积+旋转体体积错题；应用题模板整理", action: "应用题步骤标准化" },
+            { date: "5.01", weekday: "周四", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "五一假期：微分方程+多元微分错题", task: "重刷微分方程+多元微分+二重积分错题；公式默写", action: "五一假期可用半天休息" },
+            { date: "5.02", weekday: "周五", week: "W7", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础补漏(4)：二重积分与中值定理", task: "重刷二重积分+中值定理错题；中值定理结论记忆", action: "补漏收尾" },
+
+            // ========== W8 (5.03-5.09) ==========
+            { date: "5.03", weekday: "周六", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "《考点全刷》基础篇收尾(1)", task: "极限至导数章节剩余错题清零；未做题补做", action: "《考点全刷》逐题过一遍" },
+            { date: "5.04", weekday: "周日", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "公式漏洞清单整理；本周补漏错题重刷", action: "建立“高数公式漏洞清单”" },
+            { date: "5.05", weekday: "周一", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "《考点全刷》基础篇收尾(2)", task: "积分至应用章节剩余错题清零；未做题补做", action: "重点标记反复错题目" },
+            { date: "5.06", weekday: "周二", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "高数讲义错题重刷(1)：极限至导数", task: "基础讲义例题遮住答案重做；标记仍不会的题", action: "讲义例题三遍法第2遍" },
+            { date: "5.07", weekday: "周三", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "高数讲义错题重刷(2)：积分至应用", task: "基础讲义例题遮住答案重做；计算题限时训练", action: "每道大题限时15分钟" },
+            { date: "5.08", weekday: "周四", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "高数讲义错题重刷(3)：微分方程至二重积分", task: "基础讲义例题遮住答案重做；步骤规范化检查", action: "证明题和概念题理解为主" },
+            { date: "5.09", weekday: "周五", week: "W8", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础模拟自测(1)", task: "选填限时训练（40题，限时70min）；批改并分析错误类型", action: "模拟考场节奏" },
+
+            // ========== W9 (5.10-5.16) ==========
+            { date: "5.10", weekday: "周六", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础专题复盘：极限与导数", task: "极限计算+导数应用大题专项（5道，限时75min）", action: "重点练计算准确率" },
+            { date: "5.11", weekday: "周日", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "【周日复盘】", task: "积分与定积分应用专题错题重刷；公式默写第4轮", action: "积分公式必须肌肉记忆" },
+            { date: "5.12", weekday: "周一", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础专题复盘：微分方程与多元微分", task: "微分方程+多元微分+二重积分大题专项（5道，限时75min）", action: "微分方程与二重积分结合题" },
+            { date: "5.13", weekday: "周二", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "高数基础专题复盘：二重积分与中值定理", task: "二重积分计算+中值定理证明专项；步骤标准化", action: "中值定理记套路模板" },
+            { date: "5.14", weekday: "周三", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "参加周洋鑫基础阶段公式测试/自测", task: "完整模拟测试环境；严格限时；考后详细复盘", action: "暴露真实漏洞" },
+            { date: "5.15", weekday: "周四", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "高数公式一页纸定稿+完整默写", task: "极限、导数、积分、微分方程、多元、二重积分公式浓缩至1页A4纸", action: "默写2轮，错误处红笔标记" },
+            { date: "5.16", weekday: "周五", week: "W9", phase: "高数基础", phaseClass: "phase-calc", content: "【高数基础最终检验】", task: "遮住答案，基础讲义例题随机抽20道，要求80%流畅写出", action: "未达标则周末加练；达标则庆祝一下" },
+
+            // ========== W10 线代基础 (5.17-5.23) ==========
+            { date: "5.17", weekday: "周六", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "线代第1-2课 行列式定义性质+计算", task: "1.5倍速听课+例题重做；4阶行列式计算练5道", action: "当天例题必须独立写出" },
+            { date: "5.18", weekday: "周日", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "【周日复盘】", task: "线代概念预习：矩阵运算公式整理；行列式错题重刷", action: "准备线代错题本" },
+            { date: "5.19", weekday: "周一", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "线代第3-4课 矩阵运算+逆矩阵", task: "听课+例题重做；求逆矩阵3种方法对比；分块矩阵公式", action: "逆矩阵公式默写" },
+            { date: "5.20", weekday: "周二", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "线代第5课 分块矩阵+向量(1)线性相关性", task: "听课+例题重做；分块矩阵乘法；线性相关性定义理解", action: "秩的概念入门" },
+            { date: "5.21", weekday: "周三", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "线代第6-7课 向量(2)极大无关组+方程组(1)", task: "听课+例题重做；极大无关组求解；齐次方程组基础解系", action: "建立“秩的语言”" },
+            { date: "5.22", weekday: "周四", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "线代第8-9课 方程组(2)+特征值(1)", task: "听课+例题重做；非齐次方程组通解结构；特征值定义与计算", action: "方程组解的判定流程图" },
+            { date: "5.23", weekday: "周五", week: "W10", phase: "线代基础", phaseClass: "phase-linear", content: "线代第10课 特征值(2)相似矩阵", task: "听课+例题重做；相似对角化判定条件；特征值性质", action: "特征值计算标准化" },
+
+            // ========== W11 (5.24-5.30) ==========
+            { date: "5.24", weekday: "周六", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "线代第11-12课 二次型概念+正交变换", task: "听课+例题重做；二次型矩阵表示；正交变换化标准型步骤", action: "正交变换流程标准化" },
+            { date: "5.25", weekday: "周日", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "【周日复盘】", task: "行列式+矩阵错题重刷；线代公式默写第1轮", action: "基础阶段错题清零" },
+            { date: "5.26", weekday: "周一", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "线代第13-14课 二次型正定+线代综合(1)", task: "听课+例题重做；正定判定（顺序主子式/特征值/定义）", action: "正定判定三种方法对比" },
+            { date: "5.27", weekday: "周二", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "线代第15-16课 线代综合(2)(3)", task: "听课+例题重做；线代基础阶段综合题型串讲", action: "综合题打通章节壁垒" },
+            { date: "5.28", weekday: "周三", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "线代第17课 线代基础总结(1)", task: "听课+例题重做；行列式矩阵向量专题串讲", action: "基础班收尾开始" },
+            { date: "5.29", weekday: "周四", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "线代第18课 线代基础总结(2)", task: "听课+例题重做；方程组特征值二次型专题串讲", action: "线代基础课全部结束" },
+            { date: "5.30", weekday: "周五", week: "W11", phase: "线代基础", phaseClass: "phase-linear", content: "线代基础讲义错题重刷(1)：行列式矩阵", task: "遮住答案重做；标记仍不会的题", action: "讲义例题三遍法第2遍" },
+
+            // ========== W12 线代过渡 (5.31-6.06) ==========
+            { date: "5.31", weekday: "周六", week: "W12", phase: "线代基础", phaseClass: "phase-linear", content: "线代基础讲义错题重刷(2)：向量方程组", task: "遮住答案重做；向量组线性相关性判定专项", action: "秩的等价表述默写" },
+            { date: "6.01", weekday: "周日", week: "W12", phase: "线代基础", phaseClass: "phase-linear", content: "【周日复盘】", task: "线代基础错题清零+公式默写第2轮；制定过渡周计划", action: "基础→强化衔接准备" },
+            { date: "6.02", weekday: "周一", week: "W12", phase: "线代过渡", phaseClass: "phase-trans", content: "过渡：公式大默写第1轮（逆矩阵+秩）", task: "逆矩阵公式、秩的6种等价表述、秩的不等式；默写2轮", action: "红笔标记遗忘点" },
+            { date: "6.03", weekday: "周二", week: "W12", phase: "线代过渡", phaseClass: "phase-trans", content: "过渡：公式大默写第2轮（特征值+正交矩阵）", task: "特征值性质、相似对角化条件、正交矩阵性质；默写2轮", action: "公式必须肌肉记忆" },
+            { date: "6.04", weekday: "周三", week: "W12", phase: "线代过渡", phaseClass: "phase-trans", content: "过渡：重刷“半懂不懂”题(1)行列式矩阵", task: "基础阶段标记的“半懂”题独立重做；对比之前答案", action: "确认真正掌握" },
+            { date: "6.05", weekday: "周四", week: "W12", phase: "线代过渡", phaseClass: "phase-trans", content: "过渡：重刷“半懂不懂”题(2)向量方程组", task: "基础阶段标记的“半懂”题独立重做；向量组+方程组专项", action: "重点突破薄弱点" },
+            { date: "6.06", weekday: "周五", week: "W12", phase: "线代过渡", phaseClass: "phase-trans", content: "过渡：重刷“半懂不懂”题(3)特征值二次型", task: "基础阶段标记的“半懂”题独立重做；正交变换步骤复盘", action: "二次型计算准确率" },
+
+            // ========== W13 线代强化 (6.07-6.13) ==========
+            { date: "6.07", weekday: "周六", week: "W13", phase: "线代过渡", phaseClass: "phase-trans", content: "过渡：浏览强化讲义目录+标记薄弱点", task: "逐章浏览强化讲义；标记自己薄弱的题型；带着问题进强化", action: "知己知彼" },
+            { date: "6.08", weekday: "周日", week: "W13", phase: "线代过渡", phaseClass: "phase-trans", content: "【周日复盘】", task: "过渡周错题重刷；线代公式第3轮默写；心态调整", action: "带着问题进强化" },
+            { date: "6.09", weekday: "周一", week: "W13", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第1讲 行列式矩阵强化(1)", task: "听课+例题重做；抽象行列式计算、矩阵方程", action: "强化班启动；建立题型本" },
+            { date: "6.10", weekday: "周二", week: "W13", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第2讲 行列式矩阵强化(2)", task: "听课+例题重做；初等变换与初等矩阵、矩阵的秩综合", action: "当天课程当天消化" },
+            { date: "6.11", weekday: "周三", week: "W13", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第3讲 向量组强化(1)", task: "听课+例题重做；线性表示、向量组等价；秩的应用", action: "向量组专题重点突破" },
+            { date: "6.12", weekday: "周四", week: "W13", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第4讲 向量组强化(2)", task: "听课+例题重做；极大无关组综合、向量组与方程组结合", action: "《考点全刷》强化篇对应章" },
+            { date: "6.13", weekday: "周五", week: "W13", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第5讲 向量组强化(3)", task: "听课+例题重做；同解与公共向量；向量组证明题", action: "证明题记套路" },
+
+            // ========== W14 (6.14-6.20) ==========
+            { date: "6.14", weekday: "周六", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第6讲 线性方程组强化(1)", task: "听课+例题重做；含参方程组讨论、同解与公共解", action: "含参讨论是数二大题来源" },
+            { date: "6.15", weekday: "周日", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "【周日复盘】", task: "向量组+方程组大题限时练（3道，限时60min）；错题重刷", action: "大题步骤标准化" },
+            { date: "6.16", weekday: "周一", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第7讲 线性方程组强化(2)", task: "听课+例题重做；矩阵方程、方程组与向量组综合", action: "矩阵方程求解流程" },
+            { date: "6.17", weekday: "周二", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第8讲 特征值相似强化(1)", task: "听课+例题重做；相似对角化判定与计算；实对称矩阵", action: "相似对角化流程标准化" },
+            { date: "6.18", weekday: "周三", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第9讲 特征值相似强化(2)", task: "听课+例题重做；相似矩阵性质、反求矩阵A", action: "特征值计算准确率" },
+            { date: "6.19", weekday: "周四", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第10讲 特征值相似强化(3)", task: "听课+例题重做；合同与相似辨析、矩阵的幂", action: "合同/相似/等价判定流程" },
+            { date: "6.20", weekday: "周五", week: "W14", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第11讲 二次型强化(1)", task: "听课+例题重做；正交变换化标准型、配方法", action: "正交变换步骤再巩固" },
+
+            // ========== W15 总复盘 (6.21-6.30) ==========
+            { date: "6.21", weekday: "周六", week: "W15", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第12讲 二次型强化(2)", task: "听课+例题重做；正定二次型、正定矩阵判定", action: "正定判定三种方法熟练切换" },
+            { date: "6.22", weekday: "周日", week: "W15", phase: "线代强化", phaseClass: "phase-lin-adv", content: "【周日复盘】", task: "线代强化讲义错题重刷；二次型大题限时练（2道）", action: "线代强化收尾准备" },
+            { date: "6.23", weekday: "周一", week: "W15", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第13讲 二次型强化(3)", task: "听课+例题重做；二次型综合题、矩阵等价合同相似综合", action: "综合题打通任督二脉" },
+            { date: "6.24", weekday: "周二", week: "W15", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第14讲 线代综合强化(1)", task: "听课+例题重做；线代六大题型串讲（1）", action: "建立“线代6大题型卡”" },
+            { date: "6.25", weekday: "周三", week: "W15", phase: "线代强化", phaseClass: "phase-lin-adv", content: "强化第15讲 线代综合强化(2)+线代强化收尾", task: "听课+例题重做；线代六大题型串讲（2）；线代强化全部结束", action: "《考点全刷》强化篇线代部分收尾" },
+            { date: "6.26", weekday: "周四", week: "W15", phase: "总复盘", phaseClass: "phase-review", content: "总复盘：高数基础错题清零(1)", task: "极限至导数章节错题全部重算；标记仍错的题", action: "错题清零行动开始" },
+            { date: "6.27", weekday: "周五", week: "W15", phase: "总复盘", phaseClass: "phase-review", content: "总复盘：高数基础错题清零(2)", task: "积分至定积分应用章节错题全部重算", action: "计算题必须手算到底" },
+            { date: "6.28", weekday: "周六", week: "W15", phase: "总复盘", phaseClass: "phase-review", content: "总复盘：线代基础/强化错题清零+公式手册定稿", task: "线代全部错题重算；高数线代公式浓缩至各1页A4纸", action: "公式手册定稿" },
+            { date: "6.29", weekday: "周日", week: "W15", phase: "总复盘", phaseClass: "phase-review", content: "【周日复盘】全科公式默写+阶段自测", task: "高数线代公式完整默写2轮；模拟自测选填40题", action: "暴露最后漏洞" },
+            { date: "6.30", weekday: "周一", week: "W15", phase: "总复盘", phaseClass: "phase-review", content: "【最终检验】", task: "遮住答案，高数+线代讲义例题随机抽30道，要求80%流畅写出", action: "达标则庆祝；未达标针对性加练" }
+        ];
+
+        let currentFilter = 'all';
+        let savedProgress = JSON.parse(localStorage.getItem('mathDailyPlan') || '[]');
+        if (savedProgress.length !== dailyData.length) {
+            savedProgress = new Array(dailyData.length).fill(false);
+        }
+
+        function init() {
+            renderTable();
+            updateStats();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            dailyData.forEach((item, index) => {
+                if (currentFilter !== 'all' && item.phase !== currentFilter) return;
+                
+                const isWeekend = item.weekday === '周日';
+                const isCompleted = savedProgress[index];
+                
+                const tr = document.createElement('tr');
+                tr.id = `row-${index}`;
+                if (isCompleted) tr.classList.add('completed');
+                if (isWeekend) tr.classList.add('weekend-row');
+                
+                tr.innerHTML = `
+                    <td class="check-cell">
+                        <div class="checkbox-wrapper ${isCompleted ? 'checked' : ''}" 
+                             onclick="toggleCheck(${index})" id="check-${index}"></div>
+                    </td>
+                    <td class="date-col">
+                        <span class="weekday">${isWeekend ? '🟧 ' : ''}${item.weekday}</span><br>
+                        <span style="font-size:11px;color:#718096">${item.date}</span>
+                    </td>
+                    <td class="week-col">${item.week}</td>
+                    <td><span class="phase-badge ${item.phaseClass}">${item.phase}</span></td>
+                    <td>${item.content}</td>
+                    <td class="task-cell">${item.task}</td>
+                    <td class="action-cell">${item.action}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleCheck(index) {
+            savedProgress[index] = !savedProgress[index];
+            localStorage.setItem('mathDailyPlan', JSON.stringify(savedProgress));
+            
+            const checkbox = document.getElementById(`check-${index}`);
+            const row = document.getElementById(`row-${index}`);
+            
+            if (savedProgress[index]) {
+                checkbox.classList.add('checked');
+                row.classList.add('completed');
+            } else {
+                checkbox.classList.remove('checked');
+                row.classList.remove('completed');
+            }
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const completed = savedProgress.filter(v => v).length;
+            const total = dailyData.length;
+            const percent = Math.round((completed / total) * 100);
+            
+            // 计算连续打卡
+            let streak = 0;
+            for (let i = 0; i < savedProgress.length; i++) {
+                if (savedProgress[i]) streak++;
+                else break;
+            }
+            
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('remainingCount').textContent = total - completed;
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('streakCount').textContent = streak;
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        function filterPhase(phase) {
+            currentFilter = phase;
+            document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTable();
+        }
+
+        function markAllDone() {
+            if (!confirm('确定要将全部108天标记为已完成吗？')) return;
+            savedProgress = new Array(dailyData.length).fill(true);
+            localStorage.setItem('mathDailyPlan', JSON.stringify(savedProgress));
+            renderTable();
+            updateStats();
+        }
+
+        function resetAll() {
+            if (!confirm('确定要清空所有打卡进度吗？此操作不可恢复。')) return;
+            savedProgress = new Array(dailyData.length).fill(false);
+            localStorage.setItem('mathDailyPlan', JSON.stringify(savedProgress));
+            renderTable();
+            updateStats();
+        }
+
+        function exportExcel() {
+            const data = dailyData.map((item, i) => ({
+                "打卡状态": savedProgress[i] ? "✅ 已完成" : "⬜ 未完成",
+                "日期": item.date,
+                "星期": item.weekday,
+                "周次": item.week,
+                "阶段": item.phase,
+                "课程/任务": item.content,
+                "具体产出": item.task,
+                "关键动作": item.action
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "每日打卡计划");
+            ws['!cols'] = [
+                {wch: 12}, {wch: 8}, {wch: 8}, {wch: 6}, {wch: 12},
+                {wch: 40}, {wch: 50}, {wch: 35}
+            ];
+            XLSX.writeFile(wb, "2027考研数学二_3.15-6.30每日打卡计划.xlsx");
+        }
+
+        function exportWord() {
+            let html = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                      xmlns:w='urn:schemas-microsoft-com:office:word' 
+                      xmlns='http://www.w3.org/TR/REC-html40'>
+                <head><meta charset='utf-8'><title>每日打卡计划</title>
+                <style>
+                    body { font-family: "Microsoft YaHei", sans-serif; font-size: 11px; }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #333; padding: 6px; text-align: left; }
+                    th { background-color: #667eea; color: white; }
+                    .done { background-color: #f0fff4; }
+                    h1 { text-align: center; color: #2d3748; font-size: 18px; }
+                </style></head>
+                <body>
+                    <h1>2027考研数学二 · 3.15-6.30 每日打卡计划</h1>
+                    <table>
+                        <tr>
+                            <th>打卡状态</th><th>日期</th><th>星期</th><th>周次</th>
+                            <th>阶段</th><th>课程/任务</th><th>具体产出</th><th>关键动作</th>
+                        </tr>
+            `;
+            
+            dailyData.forEach((item, i) => {
+                const done = savedProgress[i];
+                html += `<tr class="${done ? 'done' : ''}">
+                    <td>${done ? '✅ 已完成' : '⬜ 未完成'}</td>
+                    <td>${item.date}</td><td>${item.weekday}</td><td>${item.week}</td>
+                    <td>${item.phase}</td><td>${item.content}</td>
+                    <td>${item.task}</td><td>${item.action}</td>
+                </tr>`;
+            });
+            
+            html += `</table></body></html>`;
+            
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '2027考研数学二_3.15-6.30每日打卡计划.doc';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        init();
+    </script>
+</body>
+</html>
